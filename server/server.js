@@ -1,30 +1,27 @@
 import express from "express";
+
 import "dotenv/config";
 import cors from "cors";
 import http from "http";
-import { connect } from "http2";
 import { Server } from "socket.io";
 import { connectDB } from "./lib/db.js";
- import messageRouter from "./routes/messageRoutes.js";
-// import userRoutes from './routes/userRoutes.js';
- import userRouter from "./routes/userRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
+import userRoutes from './routes/userRoutes.js';
+import userRouter from "./routes/userRoutes.js";
 
 
 
 // Create express app and HTTP server
 const app = express();
-const server = http.createServer(app) // Renamed to avoid conflict
+const httpServer = http.createServer(app); // Renamed to avoid conflict
 
 // Initialize socket.io
- export const io = new Server(server, {
+const io = new Server(httpServer, {
     cors: { origin: "*" }
-})
-
-
+});
 
 // Store online users
-export const userSocketMap = {}; // Store userId and socketId mapping
- 
+export const userSocketMap = {};
 
 // Socket.io connection handler
 io.on("connection", (socket) => {
@@ -33,50 +30,41 @@ io.on("connection", (socket) => {
     
     if (userId) {
         userSocketMap[userId] = socket.id;
-    
-
-    
+    }
 // emit online user to all connected clients
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    io.emit("getOnline-users", Object.keys(userSocketMap));
 
     socket.on("disconnect", () => {
         console.log("User disconnected", userId);
         delete userSocketMap[userId];
         io.emit("getOnlineUsers", Object.keys(userSocketMap))
     })
-}});
-
-   //        export { io };
-
+});
+export { io };
 
 // Middleware
 app.use(express.json({ limit: "4mb" }));
 app.use(cors());
 
 // Routes setup
-app.use("/api/status", (req, res) =>  res.send("Server is live"));
+app.get("/api/status", (req, res) => {
+    res.send("Server is live");
+});
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
 
-
-
 // Connect to MongoDB and start server
-
- await connectDB();
-
-
-  const PORT = process.env.PORT || 5000;
-        server.listen(PORT, () => 
-            console.log("Server is running on port:" + PORT)
-        ); 
-/*const startServer = async () => {
+const startServer = async () => {
     try {
-       
-       
+        await connectDB();
+        const PORT = process.env.PORT || 5000;
+        httpServer.listen(PORT, () => 
+            console.log("Server is running on port:" + PORT)
+        );
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
     }
 };
 
-startServer()*/
+startServer()

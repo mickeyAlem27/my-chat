@@ -8,7 +8,7 @@ export const connectDB = async () => {
       console.log('Database connected')
     );
      // Connect to MongoDB without deprecated options
-    await mongoose.connect (`${process.env.MONGODB_URI}/chat-app`)
+    await mongoose.connect (`${process.env.MONGODB_URI}`)
 
 
    
