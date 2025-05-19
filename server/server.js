@@ -71,4 +71,4 @@ const startServer = async () => {
 startServer()
 
 // export server for versel
-export default httpServer ;
+export default Server ;
