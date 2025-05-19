@@ -6,7 +6,6 @@ import http from "http";
 import { Server } from "socket.io";
 import { connectDB } from "./lib/db.js";
 import messageRouter from "./routes/messageRoutes.js";
-import userRoutes from './routes/userRoutes.js';
 import userRouter from "./routes/userRoutes.js";
 
 
@@ -31,14 +30,14 @@ io.on("connection", (socket) => {
     if (userId) {
         userSocketMap[userId] = socket.id;
     }
-// emit online user to all connected clients
-    io.emit("getOnline-users", Object.keys(userSocketMap));
+    // emit online users to all connected clients
+    io.emit("getOnlineUsers", Object.keys(userSocketMap)); // <-- use the same event name
 
     socket.on("disconnect", () => {
         console.log("User disconnected", userId);
         delete userSocketMap[userId];
-        io.emit("getOnlineUsers", Object.keys(userSocketMap))
-    })
+        io.emit("getOnlineUsers", Object.keys(userSocketMap)); // <-- use the same event name
+    });
 });
 export { io };
 

@@ -63,39 +63,37 @@ export const getUsersForSidebar= async (req, res) => {
         }
     }
     // send message to selected user
-    export const sendMessage= async (req, res) => {
-        try{
-            const {text, image}= req.body;
-            const receiverId=req.user._id;
-            const senderId=req.user._id;
-    //use to get images from cloudary
-            let imageUrl;
-            if(image){
-                const uploadResponse = await cloudinary.uploader.upload(image)
-                 imageUrl=uploadResponse.secure_url;
-                }
-        const newMessage= await Message.create({
+    export const sendMessage = async (req, res) => {
+    try {
+        const { text, image } = req.body;
+        const senderId = req.user._id;
+        const receiverId = req.params.id; // <-- Make sure your route is /api/messages/send/:id
+
+        let imageUrl;
+        if (image) {
+            const uploadResponse = await cloudinary.uploader.upload(image);
+            imageUrl = uploadResponse.secure_url;
+        }
+
+        const newMessage = await Message.create({
             senderId,
             receiverId,
-             text,
-            image:imageUrl
-        })
+            text,
+            image: imageUrl
+        });
 
-      //emit the message to the receiver's socket
-        const receiverSocketId=userSocketMap[receiverId];
-        if (receiverSocketId){
-            io.to(receiverSocketId).emit("newMessage",newMessage) 
+        // emit the message to the receiver's socket
+        const receiverSocketId = userSocketMap[receiverId];
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
         }
 
-
- 
-        res.json({success: true, newMessage});
-               
-        }catch (error) {
-            console.log(error.message);
-            res.json({success: false, message: error.message});
-        }
+        res.json({ success: true, newMessage });
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
     }
+}
 
 
 
